@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AHSTA Membership Analytics</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app-container">
+    <section class="card hero-card">
+      <div>
+        <h1>AHSTA Membership Analytics</h1>
+        <p>Compare two membership Excel files and generate year-wise analytics.</p>
+      </div>
+    </section>
+
+    <section class="card report-title-card hidden" id="reportTitleCard">
+      <h2 id="reportTitleText">AHSTA Membership Analytics Report</h2>
+      <p id="reportSubtitleText">Comparison Report: 2024-25 and 2025-26</p>
+      <p id="reportDistrictText">District: ERNAKULAM</p>
+      <p id="reportGeneratedDate"></p>
+    </section>
+
+
+    <section class="card report-settings-card no-print">
+      <h2>Report Settings</h2>
+
+      <div class="settings-grid">
+        <div>
+          <label for="districtInput">District Name</label>
+          <input type="text" id="districtInput" value="ERNAKULAM" />
+        </div>
+
+        <div>
+          <label for="reportTitleInput">Report Title</label>
+          <input type="text" id="reportTitleInput" value="AHSTA Membership Analytics Report" />
+        </div>
+
+        <div>
+          <label for="oldYearInput">Old Year Label</label>
+          <input type="text" id="oldYearInput" value="2024-25" />
+        </div>
+
+        <div>
+          <label for="newYearInput">New Year Label</label>
+          <input type="text" id="newYearInput" value="2025-26" />
+        </div>
+      </div>
+    </section>
+
+    <section class="card upload-grid no-print">
+      <div class="upload-box">
+        <label>Membership 2024-25 Excel</label>
+        <input type="file" id="oldFileInput" accept=".xlsx,.xls" />
+      </div>
+
+      <div class="upload-box">
+        <label>Membership 2025-26 Excel</label>
+        <input type="file" id="newFileInput" accept=".xlsx,.xls" />
+      </div>
+
+      <button id="analyzeButton" class="primary-btn">Analyze Files</button>
+      <button id="downloadReportButton" class="secondary-btn" disabled>Download Excel Report</button>
+      <button id="printReportButton" class="secondary-btn" disabled>Print / Save PDF</button>
+    </section>
+
+
+    <section class="card hidden no-print" id="separateDownloadsSection">
+      <h2>Separate Downloads</h2>
+      <div class="download-grid">
+        <button class="secondary-btn separate-download-btn" data-report="school">Download School Comparison</button>
+        <button class="secondary-btn separate-download-btn" data-report="new">Download New Members</button>
+        <button class="secondary-btn separate-download-btn" data-report="missing">Download Not Renewed</button>
+        <button class="secondary-btn separate-download-btn" data-report="changed">Download Changed Details</button>
+        <button class="secondary-btn separate-download-btn" data-report="issues">Download Data Issues</button>
+      </div>
+    </section>
+
+    <section id="summarySection" class="summary-section hidden"></section>
+
+
+    <section class="card hidden" id="chartsSection">
+      <h2>Charts</h2>
+
+      <div class="chart-grid">
+        <div class="chart-card">
+          <h3>Total Members Comparison</h3>
+          <canvas id="totalMembersChart"></canvas>
+        </div>
+
+        <div class="chart-card">
+          <h3>Top 10 Schools - Highest Increase</h3>
+          <canvas id="topIncreaseChart"></canvas>
+        </div>
+
+        <div class="chart-card">
+          <h3>Top 10 Schools - Highest Decrease</h3>
+          <canvas id="topDecreaseChart"></canvas>
+        </div>
+
+        <div class="chart-card">
+          <h3>Top 10 Subjects - 2025-26</h3>
+          <canvas id="subjectChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="card hidden" id="schoolSection">
+      <div class="section-header">
+        <h2>School-wise Comparison</h2>
+        <div class="filter-row no-print">
+          <input type="text" id="schoolSearchInput" placeholder="Search school..." />
+          <select id="schoolStatusFilter">
+            <option value="All">All schools</option>
+            <option value="Increased">Increased only</option>
+            <option value="Decreased">Decreased only</option>
+            <option value="Same">Same only</option>
+            <option value="ZeroNew">Zero members in 2025-26</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>School</th>
+              <th>2024-25</th>
+              <th>2025-26</th>
+              <th>Difference</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="schoolTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+
+    <section class="card hidden" id="changedDetailsSection">
+      <h2>Transfer / Changed Details Detection</h2>
+      <div class="issue-grid" id="changedDetailsSummary"></div>
+
+      <div class="filter-row no-print">
+        <select id="changedTypeFilter">
+          <option value="All">All change types</option>
+        </select>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Change Type</th>
+              <th>Name</th>
+              <th>2024-25 School</th>
+              <th>2025-26 School</th>
+              <th>2024-25 Subject</th>
+              <th>2025-26 Subject</th>
+              <th>2024-25 Phone</th>
+              <th>2025-26 Phone</th>
+            </tr>
+          </thead>
+          <tbody id="changedDetailsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="two-column">
+      <div class="card hidden" id="newMembersSection">
+        <h2>New Members in 2025-26</h2>
+        <div class="filter-row no-print">
+          <select id="newMembersSchoolFilter">
+            <option value="All">All schools</option>
+          </select>
+        </div>
+
+        <div class="filter-row no-print">
+          <select id="missingMembersSchoolFilter">
+            <option value="All">All schools</option>
+          </select>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr><th>Name</th><th>School</th><th>Subject</th><th>Phone</th></tr>
+            </thead>
+            <tbody id="newMembersBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card hidden" id="missingMembersSection">
+        <h2>Not Renewed / Missing Members</h2>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr><th>Name</th><th>School</th><th>Subject</th><th>Phone</th></tr>
+            </thead>
+            <tbody id="missingMembersBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+
+    <section class="card hidden" id="dataIssuesSection">
+      <h2>Data Quality Checks</h2>
+      <div class="issue-grid" id="issueSummary"></div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Issue</th>
+              <th>Year</th>
+              <th>Name</th>
+              <th>School</th>
+              <th>Subject</th>
+              <th>Phone</th>
+            </tr>
+          </thead>
+          <tbody id="dataIssuesBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card hidden" id="subjectSection">
+      <h2>Subject-wise Comparison</h2>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Subject</th>
+              <th>2024-25</th>
+              <th>2025-26</th>
+              <th>Difference</th>
+            </tr>
+          </thead>
+          <tbody id="subjectTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="utils.js"></script>
+  <script src="excelReader.js"></script>
+  <script src="analytics.js"></script>
+  <script src="ui.js"></script>
+  <script src="reportGenerator.js"></script>
+  <script src="charts.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
